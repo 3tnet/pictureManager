@@ -45,6 +45,7 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     public function register()
     {
+		
         $this->app->singleton('pictureManager', function ($app) {
             $config = $app['config']->get('picture');
             $pictureManager = new PictureManager();
@@ -57,5 +58,9 @@ class PictureManagerServiceProvider extends ServiceProvider
             }
             return $pictureManager;
         });
+		//合并配置文件
+		$this->mergeConfigFrom(
+            realpath(__DIR__.'/../config/picture.php'), 'picture'
+        );
     }
 }
