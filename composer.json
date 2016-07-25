@@ -8,9 +8,7 @@
         }
     ],
     "license": "MIT",
-    "require": {
-        "intervention/image": "^2.3"
-    },
+    "require": {},
     "autoload": {
         "psr-4": {
             "Ty666\\PictureManager\\": "src/"
