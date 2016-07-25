@@ -166,6 +166,7 @@ class PictureManager
      * 生成图片
      */
     protected function createPicture(){
+
         $image = Image::make($this->original);
 
         if($this->quality){

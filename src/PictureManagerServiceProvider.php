@@ -25,18 +25,20 @@ class PictureManagerServiceProvider extends ServiceProvider
      * 图片路由
      */
     protected function pictureRoute(){
-        $routeConfig = $this->app['config']->get('picture.route');
-        if($routeConfig['path'] != ''){
-
-            $this->app['router']->get($routeConfig['path'].'/{img_id}_{size}_{suffix}',[
-                'as' => $routeConfig['name'],
-                'middleware' => $routeConfig['middleware'],
+        $config = $this->app['config']->get('picture');
+        if($config['route']['path'] != ''){
+            //图片尺寸正则
+            $sizePattern = '('.implode('|', array_keys($config['sizeList'])).')';
+            //图片后缀正则
+            $suffixPattern = '('.implode('|',$config['allowTypeList']).')';
+            $this->app['router']->get($config['route']['path'].'/{img_id}_{size}_{suffix}',[
+                'as' => $config['route']['name'],
+                'middleware' => $config['route']['middleware'],
                 function ($img_id, $size, $suffix){
                     return \Ty666\PictureManager\Facades\PictureManager::init($img_id, $size, $suffix)->show();
                 }
-            ])->where(['img_id'=>'[a-zA-Z0-9]{32}','size'=>'(xs|l|b)','suffix'=>'(jpg|png|gif)']);
+            ])->where(['img_id'=>'[a-zA-Z0-9]{32}','size' => $sizePattern, 'suffix' => $suffixPattern]);
         }
-
     }
     /**
      * Register the application services.
