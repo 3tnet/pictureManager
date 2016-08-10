@@ -5,7 +5,7 @@ use Intervention\Image\Facades\Image;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Ty666\PictureManager\Exception\PictureNotFountException;
 use Ty666\PictureManager\Exception\UploadException;
-
+use Log;
 class PictureManager
 {
     //图片实际尺寸
@@ -181,6 +181,17 @@ class PictureManager
         }
 
     }
+
+    /**
+     * 多图上传
+     */
+    public function uploadMultiple($imageFiles){
+        $return = [];
+        foreach ($imageFiles as $imageFile){
+            $return[] = $this->upload($imageFile);
+        }
+        return $return;
+    }
     /**
      * 上传图片
      * @param UploadedFile $imageFile
@@ -188,8 +199,15 @@ class PictureManager
      * @return string
      */
     public function upload(UploadedFile $imageFile){
+
+
         if($imageFile instanceof UploadedFile){
             if($imageFile->isValid()){
+                //获取图片扩展名
+                $minmeType = $imageFile->getMimeType();
+                $suffix = substr(strstr($minmeType,'/',false),1);
+                $suffix = $suffix=='jpeg'?'jpg':$suffix;
+                //md5
                 $image_id = md5_file($imageFile->getRealPath());
                 $path = $this->getPath($image_id);
                 if($this->needWaterMark && $this->watermark!=''){
@@ -200,8 +218,8 @@ class PictureManager
                 }else{
                     $imageFile->move($path[0],$path[1]);
                 }
-                //TODO
-                return $path[0].$path[1];
+                return $path[1].'.'.$suffix;
+
             }else{
                 throw new UploadException($imageFile->getErrorMessage());
             }

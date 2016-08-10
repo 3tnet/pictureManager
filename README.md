@@ -31,4 +31,4 @@ Route::get('/pic/{img_id}_{size}_{suffix}',
 
 ## Config
 
-set the toaster options in **config/toastr.php** 
+set the pictureConfig options in **config/picture.php** 
