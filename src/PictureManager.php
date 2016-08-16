@@ -76,12 +76,12 @@ class PictureManager
 
         $this->image_id = $image_id;
         if(!array_key_exists($size,$this->sizeList)){
-            throw new PictureNotFountException('图片尺寸出错');
+            throw new PictureNotFountException("图片尺寸出错,\"$size\"不存在！");
         }else{
             $this->size = $size;
         }
         if(!in_array($type,$this->allowTypeList)){
-            throw new PictureNotFountException('图片类型出错');
+            throw new PictureNotFountException("图片类型出错,\"$type\"不存在！");
         }else{
             $this->type = $type;
         }
@@ -139,6 +139,7 @@ class PictureManager
         if($this->original == ''){
             $this->init($image_id, $size, $type);
         }
+
         //判断图片是否存在
         if(!file_exists($this->original)){
             //404
@@ -166,9 +167,7 @@ class PictureManager
      * 生成图片
      */
     protected function createPicture(){
-
-        $image = Image::make($this->original);
-
+        $image = app('image')->make($this->original);
         if($this->quality){
             //添加水印
 //            $this->watermark != '' && $image->insert($this->watermark,'bottom-right', 10, 10);

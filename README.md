@@ -6,7 +6,7 @@ a picture manage tool
 
 - Run `composer require ty666/picture-manager`
 
-
+- Add `Intervention\Image\ImageServiceProvider::class,` to  **providers** in *config/app.php*
 - Add `Ty666\PictureManager\PictureManagerServiceProvider::class,` to  **providers** in *config/app.php*
 - Add `'PictureManager' => Ty666\PictureManager\Facades\PictureManager::class,` to **aliases** in *config/app.php*
 - Run `php artisan vendor:publish`
@@ -19,7 +19,7 @@ a picture manage tool
 ``` 
 return PictureManager::init($image_id, $size, $type)->show();
 ```
-在routes.php中添加路由（可在配置文件中配置 pictureManager会自动创建路由）
+pictureManager会自动创建如下路由（可在配置文件中配置）
 ``` 
 Route::get('/pic/{img_id}_{size}_{suffix}', 
     function ($img_id, $size, $suffix){
