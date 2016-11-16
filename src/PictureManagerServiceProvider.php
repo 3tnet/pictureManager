@@ -13,12 +13,11 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        parent::boot();
         $this->publishes([
             realpath(__DIR__.'/../config/picture.php') => config_path('picture.php'),
         ]);
 
-        $this->pictureRoute();
+        //$this->pictureRoute();
     }
 
     /**

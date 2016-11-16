@@ -199,7 +199,6 @@ class PictureManager
      */
     public function upload(UploadedFile $imageFile){
 
-
         if($imageFile instanceof UploadedFile){
             if($imageFile->isValid()){
                 //获取图片扩展名
@@ -217,7 +216,8 @@ class PictureManager
                 }else{
                     $imageFile->move($path[0],$path[1]);
                 }
-                return $path[1].'.'.$suffix;
+
+                return $image_id.'.'.$suffix;
 
             }else{
                 throw new UploadException($imageFile->getErrorMessage());
