@@ -1,11 +1,12 @@
 <?php
 
 namespace Ty666\PictureManager;
-use Intervention\Image\Facades\Image;
+use Faker\Provider\Image;
+use Intervention\Image\ImageManager;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Ty666\PictureManager\Exception\PictureNotFountException;
 use Ty666\PictureManager\Exception\UploadException;
-use Log;
+
 class PictureManager
 {
     //图片实际尺寸
@@ -75,7 +76,7 @@ class PictureManager
     public function init($image_id , $size ,$type){
 
         $this->image_id = $image_id;
-        if(!array_key_exists($size,$this->sizeList)){
+        if(!array_key_exists($size, $this->sizeList)){
             throw new PictureNotFountException("图片尺寸出错,\"$size\"不存在！");
         }else{
             $this->size = $size;
@@ -90,6 +91,10 @@ class PictureManager
         return $this;
     }
 
+    public function getSizeList(){
+
+        return $this->sizeList;
+    }
     /**
      * 获取图片路径
      * @param $image_id
@@ -155,7 +160,7 @@ class PictureManager
             $response = response('',304);
         }else{
             //无缓存
-            $response = Image::make($this->path)->response($this->type);
+            $response = (new ImageManager())->make($this->path)->response($this->type);
         }
         $response->header('Content-Disposition' , 'inline; filename='.$fileName);
         $response->header('Etag',$fileName);
@@ -167,7 +172,7 @@ class PictureManager
      * 生成图片
      */
     protected function createPicture(){
-        $image = app('image')->make($this->original);
+        $image = (new ImageManager())->make($this->original);
         if($this->quality){
             //添加水印
 //            $this->watermark != '' && $image->insert($this->watermark,'bottom-right', 10, 10);
@@ -210,7 +215,7 @@ class PictureManager
                 $path = $this->getPath($image_id);
                 if($this->needWaterMark && $this->watermark!=''){
                     //需要添加水印
-                    Image::make($imageFile)
+                    (new ImageManager())->make($imageFile)
                         ->insert($this->watermark,'bottom-right', 10, 10)
                         ->save($path[0].$path[1]);
                 }else{

@@ -7,6 +7,12 @@ use Illuminate\Support\ServiceProvider;
 class PictureManagerServiceProvider extends ServiceProvider
 {
     /**
+     * 服务提供者加是否延迟加载.
+     *
+     * @var bool
+     */
+    protected $defer = true;
+    /**
      * Bootstrap the application services.
      *
      * @return void
@@ -46,8 +52,6 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-
-
         $this->app->singleton('pictureManager', function ($app) {
             $config = $app['config']->get('picture');
             $pictureManager = new PictureManager();
