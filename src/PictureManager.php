@@ -3,12 +3,15 @@
 namespace Ty666\PictureManager;
 use Faker\Provider\Image;
 use Intervention\Image\ImageManager;
+use phpDocumentor\Reflection\Types\String_;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Ty666\PictureManager\Exception\PictureNotFountException;
 use Ty666\PictureManager\Exception\UploadException;
 
 class PictureManager
 {
+    private $image = null;
+    private $imageMakeds = [];
     //图片实际尺寸
     public $path;
     //图片类型
@@ -40,6 +43,23 @@ class PictureManager
         return $this;
     }
 
+    /**
+     *
+     * @return ImageManager
+     */
+    public function getImage(){
+        if(is_null($this->image)){
+
+            $this->image = new ImageManager();
+        }
+        return $this->image;
+    }
+    public function getImageMaked($path){
+        if(!isset($this->imageMakeds[$path])){
+            $this->imageMakeds[$path] = $this->getImage()->make($path);
+        }
+        return $this->imageMakeds[$path];
+    }
     /**
      * 取消水印
      * @return $this
@@ -74,7 +94,6 @@ class PictureManager
      * @return $this
      */
     public function init($image_id , $size ,$type){
-
         $this->image_id = $image_id;
         if(!array_key_exists($size, $this->sizeList)){
             throw new PictureNotFountException("图片尺寸出错,\"$size\"不存在！");
@@ -116,20 +135,24 @@ class PictureManager
 
         $path = $this->getPath($this->image_id);
         $this->original = $path[0].$path[1];
-
         //获取具体尺寸
         list($this->realSize['width'],$this->realSize['height']) = explode(',',$this->sizeList[$this->size],2);
 
+        $originalImageSize = $this->getImageMaked($this->original)->getSize();
+        $this->quality = null;
         //尺寸是原图大小
-        if( 0 == $this->realSize['width'] ){
+        if(
+            (0 == $this->realSize['width'] && 0 == $this->realSize['width'])
+            || (0 != $this->realSize['width'] && 0 == $this->realSize['height'] && $originalImageSize->width<=$this->realSize['width'])
+            || (0 == $this->realSize['width'] && 0 != $this->realSize['height'] && $originalImageSize->height<=$this->realSize['height'])
+        ){
             $this->quality = 90;
             $this->path = $this->original.'_optimize';
-        }else{
-            //带尺寸的图片路径
-            $this->quality = null;
-            $imgPath = $this->original.'_'.$this->realSize['width'].'_'.$this->realSize['height'];
-            $this->path = $imgPath;
+
         }
+
+        $imgPath = $this->original.'_'.$this->realSize['width'].'_'.$this->realSize['height'];
+        $this->path = $imgPath;
         return $this;
     }
 
@@ -160,7 +183,7 @@ class PictureManager
             $response = response('',304);
         }else{
             //无缓存
-            $response = (new ImageManager())->make($this->path)->response($this->type);
+            $response = $this->getImage()->make($this->path)->response($this->type);
         }
         $response->header('Content-Disposition' , 'inline; filename='.$fileName);
         $response->header('Etag',$fileName);
@@ -172,13 +195,15 @@ class PictureManager
      * 生成图片
      */
     protected function createPicture(){
-        $image = (new ImageManager())->make($this->original);
+        $image = $this->getImage()->make($this->original);
         if($this->quality){
             //添加水印
 //            $this->watermark != '' && $image->insert($this->watermark,'bottom-right', 10, 10);
             $image->save($this->path , $this->quality);
         }else{
-            $image->resize($this->realSize['width'], $this->realSize['height']);
+
+            $image->resize(0 == $this->realSize['width']?null:$this->realSize['width'],
+                0 == $this->realSize['height']?null:$this->realSize['height']);
             //添加水印
 //            $this->watermark != '' && $image->insert($this->watermark,'bottom-right', 10, 10);
             $image->save($this->path);
@@ -215,7 +240,7 @@ class PictureManager
                 $path = $this->getPath($image_id);
                 if($this->needWaterMark && $this->watermark!=''){
                     //需要添加水印
-                    (new ImageManager())->make($imageFile)
+                    $this->getImage()->make($imageFile)
                         ->insert($this->watermark,'bottom-right', 10, 10)
                         ->save($path[0].$path[1]);
                 }else{
