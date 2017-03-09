@@ -13,12 +13,23 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     protected $defer = true;
     /**
+     * 获取由提供者提供的服务.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return ['pictureManager'];
+    }
+
+    /**
      * Bootstrap the application services.
      *
      * @return void
      */
     public function boot()
     {
+
         $this->publishes([
             realpath(__DIR__.'/../config/picture.php') => config_path('picture.php'),
         ]);
