@@ -227,8 +227,7 @@ class PictureManager
      * @throws UploadException         If upload is fail
      * @return string
      */
-    public function upload(UploadedFile $imageFile){
-
+    public function upload($imageFile){
         if($imageFile instanceof UploadedFile){
             if($imageFile->isValid()){
                 //获取图片扩展名
