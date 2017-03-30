@@ -26,7 +26,7 @@ return [
     'allowTypeList' => [
         'png',
         'jpg',
-
+		'jpeg'
     ],
     /**
      * 默认添加水印
