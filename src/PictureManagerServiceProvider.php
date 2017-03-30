@@ -63,21 +63,15 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('pictureManager', function ($app) {
-            $config = $app['config']->get('picture');
-            $pictureManager = new PictureManager();
-            $pictureManager->setUploadDir($config['uploadPath'])
-                ->setSizeList($config['sizeList'])
-                ->setAllowTypeList($config['allowTypeList'])
-                ->setWatermark($config['watermark']);
-            if(isset($config['needWatermark'])){
-                $pictureManager->needWaterMark = $config['needWatermark'];
-            }
-            return $pictureManager;
-        });
         //合并配置文件
         $this->mergeConfigFrom(
             realpath(__DIR__.'/../config/picture.php'), 'picture'
         );
+
+        $this->app->singleton('pictureManager', function ($app) {
+            $config = $app['config']->get('picture');
+            return new PictureManager($config);
+        });
+
     }
 }

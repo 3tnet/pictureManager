@@ -2,13 +2,15 @@
 namespace Ty666\PictureManager\Traits;
 
 
+use PictureManager;
+
 Trait Picture
 {
     public function getPicure($picture, $allowSizeList = null, $defaulePic = '')
     {
         if (empty($picture)) return null;
 
-        $sizeList = array_keys(config('picture.sizeList'));
+        $sizeList = array_keys(PictureManager::getSizeList());
         if (!is_null($allowSizeList)) {
             if (is_string($allowSizeList)) $allowSizeList = [$allowSizeList];
 
@@ -21,7 +23,7 @@ Trait Picture
         list($pictureId, $suffix) = explode('.', $picture, 2);
         $data = [];
         foreach ($sizeList as $size) {
-            $data[$size] = route('image', [
+            $data[$size] = route(PictureManager::getImageRouteName(), [
                 'img_id' => $pictureId,
                 'size' => $size,
                 'suffix' => $suffix

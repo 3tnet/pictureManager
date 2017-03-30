@@ -1,10 +1,14 @@
 <?php
 
 return [
+    /**
+     * 显示图片的路由名称
+     */
+    'imageRouteName' => 'image',
     /*
      * 图片上传路径
      */
-    'uploadPath' => 'uploads/imgs/',
+    'uploadPath' => realpath('uploads/imgs/'),
     /**
      * 允许的尺寸列表
      * tip:0,0是原图大小
@@ -21,12 +25,13 @@ return [
      */
     'allowTypeList' => [
         'png',
-        'jpg'
+        'jpg',
+
     ],
     /**
      * 默认添加水印
      */
-    'needWatermark'=>false,
+    'needWaterMark'=>false,
     /**
      * 水印图片
      * tip:目录相对public目录
