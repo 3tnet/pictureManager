@@ -8,7 +8,6 @@ Trait Picture
 {
     public function getPicure($picture, $allowSizeList = null, $defaulePic = '')
     {
-        if (empty($picture)) return null;
 
         $sizeList = array_keys(PictureManager::getSizeList());
         if (!is_null($allowSizeList)) {
