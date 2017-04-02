@@ -258,7 +258,6 @@ class PictureManager
         {
             return $this->config[$name];
         }
-        var_dump($name);
         return null;
     }
 
