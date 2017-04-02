@@ -8,7 +8,7 @@ return [
     /*
      * 图片上传路径
      */
-    'uploadPath' => realpath('uploads/imgs/'),
+    'uploadPath' => public_path('uploads'.DIRECTORY_SEPARATOR.'imgs'.DIRECTORY_SEPARATOR),
     /**
      * 允许的尺寸列表
      * tip:0,0是原图大小
