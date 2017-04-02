@@ -114,7 +114,7 @@ class PictureManager
     {
         //获取路径
         return [
-            $this->uploadPath . substr($image_id, 0, 2) . '/',
+            $this->uploadPath . DIRECTORY_SEPARATOR . substr($image_id, 0, 2) . DIRECTORY_SEPARATOR,
             substr($image_id, 2)
         ];
     }
