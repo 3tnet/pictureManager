@@ -4,6 +4,7 @@ namespace Ty666\PictureManager;
 
 use Intervention\Image\ImageManager;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Ty666\PictureManager\Exception\NotWritableException;
 use Ty666\PictureManager\Exception\PictureNotFountException;
 use Ty666\PictureManager\Exception\UploadException;
 
@@ -112,9 +113,10 @@ class PictureManager
      */
     private function getPath($image_id)
     {
+
         //获取路径
         return [
-            $this->uploadPath . DIRECTORY_SEPARATOR . substr($image_id, 0, 2) . DIRECTORY_SEPARATOR,
+            $this->uploadPath . substr($image_id, 0, 2) . DIRECTORY_SEPARATOR,
             substr($image_id, 2)
         ];
     }
@@ -206,6 +208,29 @@ class PictureManager
 
     }
 
+    public function convert($imagePath, $width = null, $height = null)
+    {
+        $img = $this->getImage()->make($imagePath);
+        if($width!=null || $height != null){
+            $img->resize($width, $height);
+        }
+        $minmeType = $img->mime();
+        $suffix = substr(strstr($minmeType, '/', false), 1);
+        $imageId = md5_file($imagePath);
+        $path = $this->getPath($imageId);
+        if(!file_exists($path[0])) {
+            if(!mkdir($path[0], 0755, true)){
+                throw new NotWritableException("目录创建失败({$path[0]})");
+            }
+        }
+        if ($this->needWaterMark && $this->watermark != '') {
+            //需要添加水印
+            $img->insert($this->watermark, 'bottom-right', 10, 10)
+                ->save($path[0] . $path[1]);
+        }
+        $img->save($path[0] . $path[1]);
+        return $imageId . '.' . $suffix;
+    }
     /**
      * 多图上传
      */
