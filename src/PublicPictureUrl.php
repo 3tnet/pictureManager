@@ -15,6 +15,6 @@ class PublicPictureUrl extends PictureUrl
 
     public function getOriginalPath($pictureId)
     {
-        return config('filesystems.disks.public.root') . DIRECTORY_SEPARATOR . $this->config['uploadPath'] . substr($pictureId, 0, 2) . DIRECTORY_SEPARATOR . $pictureId;
+        return $this->config['uploadPath'] . substr($pictureId, 0, 2) . DIRECTORY_SEPARATOR . $pictureId;
     }
 }

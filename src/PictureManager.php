@@ -37,7 +37,7 @@ class PictureManager
     public function init($pictureId, $style)
     {
         $this->pictureId = $pictureId;
-        $this->originalPath = $this->pictureUrlManager->getOriginalPath($pictureId);
+        $this->originalPath = config('filesystems.disks.public.root') . DIRECTORY_SEPARATOR . $this->pictureUrlManager->getOriginalPath($pictureId);
         if (!is_null($style) && !array_key_exists($style, $this->config['sizeList'])) {
             throw new PictureNotFountException("图片样式出错,\"$style\"不存在！");
         }
@@ -108,12 +108,18 @@ class PictureManager
         }
     }
 
-    public function convert($imagePath)
+    public function convert($imageUrl)
     {
-        $imageObj = $this->imageManager->make($imagePath);
+        $imageObj = $this->imageManager->make($imageUrl);
         $pictureId = $this->pictureIdGenerator->generate($imageObj->encoded);
         $this->init($pictureId, null);
-        $imageObj->save($this->originalPath, $this->quality);
+        $dir = pathinfo($this->originalPath, PATHINFO_DIRNAME);
+        if(!file_exists($this->originalPath)){
+            if(!file_exists($dir)){
+                mkdir($dir, 0777, true);
+            }
+            $imageObj->save($this->originalPath, $this->quality);
+        }
         return $this;
     }
 }
