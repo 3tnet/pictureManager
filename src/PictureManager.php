@@ -3,183 +3,83 @@
 namespace Ty666\PictureManager;
 
 use Intervention\Image\ImageManager;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Ty666\PictureManager\Exception\NotWritableException;
 use Ty666\PictureManager\Exception\PictureNotFountException;
-use Ty666\PictureManager\Exception\UploadException;
 
 class PictureManager
 {
-    private $image = null;
-    private $imageMakeds = [];
-    //缩略图路径
-    public $path;
-    //图片类型
-    public $type;
-
-    //图片质量
-    protected $quality = null;
-
-    protected $image_id = null;
-    protected $size = '';//尺寸 字符串表示 [b,xs,lg..]
-    protected $realSize = [];//在配置文中配置的实际尺寸 数组表示 ['width'=>50,'height'=>50]
-    //原图路径
-    protected $original;
-
 
     protected $config = [];
-    public function __construct($config)
+    protected $isInit = false;
+    protected $pictureId;
+    protected $style;
+    protected $quality;
+    /**
+     * @var ImageManager
+     */
+    protected $imageManager;
+    protected $originalPath;
+    protected $thumbnailPath;
+    protected $size = [];
+    protected $pictureUrlManager;
+    protected $pictureIdGenerator;
+
+    public function __construct($config, $imageManager,
+                                PictureUrlManager $pictureUrlManager,
+                                PictureIdGenerator $pictureIdGenerator)
     {
+
         $this->config = $config;
+        $this->imageManager = $imageManager;
+        $this->pictureUrlManager = $pictureUrlManager;
+        $this->pictureIdGenerator = $pictureIdGenerator;
     }
 
-    /**
-     * 设置需要水印
-     * @return $this
-     */
-    public function withWaterMark()
+    public function init($pictureId, $style)
     {
-        $this->needWaterMark = true;
-        return $this;
-    }
-
-    /**
-     * 取消水印
-     * @return $this
-     */
-    public function cancleWaterMark()
-    {
-        $this->needWaterMark = false;
-        return $this;
-    }
-
-    /**
-     *
-     * @return ImageManager
-     */
-    public function getImage()
-    {
-        if (is_null($this->image)) {
-
-            $this->image = new ImageManager();
+        $this->pictureId = $pictureId;
+        $this->originalPath = $this->pictureUrlManager->getOriginalPath($pictureId);
+        if (!is_null($style) && !array_key_exists($style, $this->config['sizeList'])) {
+            throw new PictureNotFountException("图片样式出错,\"$style\"不存在！");
         }
-        return $this->image;
-    }
 
-    /**
-     * 缓存处理
-     * @param $path
-     * @return mixed
-     */
-    public function getImageMaked($path)
-    {
-        if (!isset($this->imageMakeds[$path])) {
-            $this->imageMakeds[$path] = $this->getImage()->make($path);
-        }
-        return $this->imageMakeds[$path];
-    }
-
-
-    /**
-     * 初始化
-     * @param string $image_id
-     * @param string $size
-     * @param string $type
-     * @thows PictureNotFountException
-     * @return $this
-     */
-    public function init($image_id, $size, $type)
-    {
-        $this->image_id = $image_id;
-        if (!array_key_exists($size, $this->sizeList)) {
-            throw new PictureNotFountException("图片尺寸出错,\"$size\"不存在！");
+        if (!is_null($style)) {
+            //获取具体尺寸
+            $style = explode(',', $this->config['sizeList'][$style], 3);
+            $this->size['width'] = $style[0] ?: null;
+            $this->size['height'] = $style[1] ?: null;
+            if (count($style) >= 3) {
+                $this->quality = $style[2];
+            } else {
+                $this->quality = $this->config['quality'];
+            }
+            $this->thumbnailPath = $this->originalPath . '_' . $style[0] . '_' . $style[1] . '_' . $this->quality;
         } else {
-            $this->size = $size;
+            $this->thumbnailPath = $this->originalPath;
         }
-        if (!in_array($type, $this->allowTypeList)) {
-            throw new PictureNotFountException("图片类型出错,\"$type\"不存在！");
-        } else {
-            $this->type = $type;
-        }
-
-        $this->setPath();
+        $this->isInit = true;
         return $this;
     }
 
-    /**
-     * 获取图片路径
-     * @param $image_id
-     * @return array
-     */
-    private function getPath($image_id)
-    {
-
-        //获取路径
-        return [
-            $this->uploadPath . substr($image_id, 0, 2) . DIRECTORY_SEPARATOR,
-            substr($image_id, 2)
-        ];
-    }
-
-    /**
-     * 设置带尺寸的图片路径
-     * @return $this
-     */
-    private function setPath()
-    {
-
-        $path = $this->getPath($this->image_id);
-        $this->original = $path[0] . $path[1];
-        //获取具体尺寸
-        list($this->realSize['width'], $this->realSize['height']) = explode(',', $this->sizeList[$this->size], 2);
-
-        $originalImageSize = $this->getImageMaked($this->original)->getSize();
-        $this->quality = null;
-        //尺寸是原图大小
-        if (
-            (0 == $this->realSize['width'] && 0 == $this->realSize['width'])
-            || (0 != $this->realSize['width'] && 0 == $this->realSize['height'] && $originalImageSize->width <= $this->realSize['width'])
-            || (0 == $this->realSize['width'] && 0 != $this->realSize['height'] && $originalImageSize->height <= $this->realSize['height'])
-        ) {
-            $this->quality = 70;
-            $this->path = $this->original . '_optimize';
-        }else {
-            $imgPath = $this->original . '_' . $this->realSize['width'] . '_' . $this->realSize['height'];
-            $this->path = $imgPath;
-        }
-
-        return $this;
-    }
 
     /**
      * 显示图片
-     * @param string $image_id
+     * @param string $pictureId
      * @param string $size
-     * @param string $type
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      */
-    public function show($image_id = '', $size = '', $type = '')
+    public function show()
     {
-        if ($this->original == '') {
-            $this->init($image_id, $size, $type);
-        }
-
-        //判断图片是否存在
-        if (!file_exists($this->original)) {
-            //404
-            throw new PictureNotFountException;
-        } elseif (!file_exists($this->path)) {//缩略图是否没有生成
-            $this->createPicture();
-        }
-        $fileName = "{$this->image_id}_{$this->size}.{$this->type}";
-
+        $fileName = "{$this->pictureId}_{$this->style}";
         //判断客户端是否有缓存
         if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $fileName) {
             //有缓存
             $response = response('', 304);
         } else {
             //无缓存
-            $response = $this->getImage()->make($this->path)->response($this->type);
+            if (!file_exists($this->thumbnailPath)) {
+                $this->createPicture();
+            }
+            $response = $this->imageManager->make($this->thumbnailPath)->response();
         }
         $response->header('Content-Disposition', 'inline; filename=' . $fileName);
         $response->header('Etag', $fileName);
@@ -192,115 +92,28 @@ class PictureManager
      */
     protected function createPicture()
     {
-        $image = $this->getImage()->make($this->original);
-        if ($this->quality) { //如果$this->quality不为空表示获取原图大小的优化后的图片
-            //添加水印
-//            $this->watermark != '' && $image->insert($this->watermark,'bottom-right', 10, 10);
-            $image->save($this->path, $this->quality);
-        } else {
-
-            $image->resize(0 == $this->realSize['width'] ? null : $this->realSize['width'],
-                0 == $this->realSize['height'] ? null : $this->realSize['height']);
-            //添加水印
-//            $this->watermark != '' && $image->insert($this->watermark,'bottom-right', 10, 10);
-            $image->save($this->path);
+        if (!file_exists($this->originalPath)) {
+            throw new PictureNotFountException();
         }
+        if (!empty($this->size)) {
+            $imageObj = $this->imageManager->make($this->originalPath);
 
-    }
-
-    public function convert($imagePath, $width = null, $height = null)
-    {
-        $img = $this->getImage()->make($imagePath);
-        if($width!=null || $height != null){
-            $img->resize($width, $height);
-        }
-        $minmeType = $img->mime();
-        $suffix = substr(strstr($minmeType, '/', false), 1);
-        $imageId = md5_file($imagePath);
-        $path = $this->getPath($imageId);
-        if(!file_exists($path[0])) {
-            if(!mkdir($path[0], 0755, true)){
-                throw new NotWritableException("目录创建失败({$path[0]})");
+            if (!is_null($this->size['width']) && !is_null($this->size['height'])) {
+                $imageObj->resize($this->size['width'], $this->size['height'], function ($constraint) {
+                    $constraint->aspectRatio();
+                });
             }
-        }
-        if ($this->needWaterMark && $this->watermark != '') {
-            //需要添加水印
-            $img->insert($this->watermark, 'bottom-right', 10, 10)
-                ->save($path[0] . $path[1]);
-        }
-        $img->save($path[0] . $path[1]);
-        return $imageId . '.' . $suffix;
-    }
-    /**
-     * 多图上传
-     */
-    public function uploadMultiple($imageFiles)
-    {
-        $return = [];
-        foreach ($imageFiles as $imageFile) {
-            $return[] = $this->upload($imageFile);
-        }
-        return $return;
-    }
 
-    /**
-     * 上传图片
-     * @param UploadedFile $imageFile
-     * @throws UploadException         If upload is fail
-     * @return string
-     */
-    public function upload($imageFile)
-    {
-        if ($imageFile instanceof UploadedFile) {
-            if ($imageFile->isValid()) {
-                //获取图片扩展名
-                $minmeType = $imageFile->getMimeType();
-                $suffix = substr(strstr($minmeType, '/', false), 1);
-                //$suffix = $suffix=='jpeg'?'jpg':$suffix;
-                //md5
-                $image_id = md5_file($imageFile->getRealPath());
-                $path = $this->getPath($image_id);
-                if ($this->needWaterMark && $this->watermark != '') {
-                    //需要添加水印
-                    $this->getImage()->make($imageFile)
-                        ->insert($this->watermark, 'bottom-right', 10, 10)
-                        ->save($path[0] . $path[1]);
-                } else {
-                    $imageFile->move($path[0], $path[1]);
-                }
-                return $image_id . '.' . $suffix;
-            } else {
-                throw new UploadException($imageFile->getErrorMessage());
-            }
-        } else {
-            throw new UploadException();
+            $imageObj->save($this->thumbnailPath, $this->quality);
         }
     }
 
-    public function __get($name)
+    public function convert($imagePath)
     {
-        if(array_key_exists($name, $this->config))
-        {
-            return $this->config[$name];
-        }
-        return null;
-    }
-
-    public function __set($name, $value)
-    {
-        $this->config[$name] = $value;
-    }
-
-    public function __call($name, $arguments)
-    {
-        $op = substr($name, 0, 3);
-        $key = lcfirst(substr($name, 3));
-
-        if($op == 'set') {
-            $this->$key = $arguments[0];
-        }else if($op == 'get'){
-            return $this->$key;
-        }
+        $imageObj = $this->imageManager->make($imagePath);
+        $pictureId = $this->pictureIdGenerator->generate($imageObj->encoded);
+        $this->init($pictureId, null);
+        $imageObj->save($this->originalPath, $this->quality);
         return $this;
     }
 }

@@ -3,6 +3,8 @@
 namespace Ty666\PictureManager;
 
 use Illuminate\Support\ServiceProvider;
+use Intervention\Image\ImageManager;
+use Storage;
 
 class PictureManagerServiceProvider extends ServiceProvider
 {
@@ -12,6 +14,7 @@ class PictureManagerServiceProvider extends ServiceProvider
      * @var bool
      */
     protected $defer = true;
+
     /**
      * 获取由提供者提供的服务.
      *
@@ -19,7 +22,7 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return ['pictureManager'];
+        return ['pictureManager', 'pictureManager.PictureUrlManager', 'pictureManager.pictureIdGenerator', 'pictureManager.uploader'];
     }
 
     /**
@@ -29,9 +32,8 @@ class PictureManagerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
         $this->publishes([
-            realpath(__DIR__.'/../config/picture.php') => config_path('picture.php'),
+            realpath(__DIR__ . '/../config/picture.php') => config_path('picture.php'),
         ]);
 
         //$this->pictureRoute();
@@ -40,8 +42,9 @@ class PictureManagerServiceProvider extends ServiceProvider
     /**
      * 图片路由
      */
-    protected function pictureRoute(){
-        $config = $this->app['config']->get('picture');
+    protected function pictureRoute()
+    {
+        /*$config = $this->app['config']->get('picture');
         if($config['route']['path'] != ''){
             //图片尺寸正则
             $sizePattern = '('.implode('|', array_keys($config['sizeList'])).')';
@@ -54,8 +57,9 @@ class PictureManagerServiceProvider extends ServiceProvider
                     return \Ty666\PictureManager\Facades\PictureManager::init($img_id, $size, $suffix)->show();
                 }
             ])->where(['img_id'=>'[a-zA-Z0-9]{32}','size' => $sizePattern, 'suffix' => $suffixPattern]);
-        }
+        }*/
     }
+
     /**
      * Register the application services.
      *
@@ -65,13 +69,27 @@ class PictureManagerServiceProvider extends ServiceProvider
     {
         //合并配置文件
         $this->mergeConfigFrom(
-            realpath(__DIR__.'/../config/picture.php'), 'picture'
+            realpath(__DIR__ . '/../config/picture.php'), 'picture'
         );
-
-        $this->app->singleton('pictureManager', function ($app) {
-            $config = $app['config']->get('picture');
-            return new PictureManager($config);
+        $this->app->bind('pictureManager', function ($app) {
+            $config = $app['config']['picture'];
+            return new PictureManager($config,
+                $this->app->make(ImageManager::class),
+                $this->app['pictureManager.PictureUrlManager'],
+                $this->app['pictureManager.pictureIdGenerator']);
         });
 
+        $this->app->singleton('pictureManager.PictureUrlManager', function ($app) {
+            return new PictureUrlManager($app);
+        });
+        $this->app->singleton('pictureManager.pictureIdGenerator', function ($app) {
+            return new PictureIdGenerator();
+        });
+        $this->app->singleton('pictureManager.uploader', function ($app) {
+            return new PictureUploader(
+                Storage::disk($app['config']->get('picture.default_disk')),
+                $this->app['pictureManager.PictureUrlManager'],
+                $this->app['pictureManager.pictureIdGenerator']);
+        });
     }
 }

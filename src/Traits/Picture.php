@@ -2,32 +2,27 @@
 namespace Ty666\PictureManager\Traits;
 
 
-use PictureManager;
-
 Trait Picture
 {
-    public function getPicure($picture, $allowSizeList = null, $defaulePic = '')
+    public function getPicure($pictureId, $allowSizeList = null, $defaultPic = '')
     {
-
-        $sizeList = array_keys(PictureManager::getSizeList());
-        if (!is_null($allowSizeList)) {
-            if (is_string($allowSizeList)) $allowSizeList = [$allowSizeList];
-
-            $sizeList = array_intersect($allowSizeList, $sizeList);
+        $sizeListKeys = array_keys(config('picture.sizeList'));
+        if (is_null($allowSizeList)) {
+            $allowSizeList = $sizeListKeys;
         }
-        if(empty($picture)) {
+        $allowSizeList = array_values(array_intersect($sizeListKeys, $allowSizeList));
+        $urls = [];
+        if (empty($pictureId)) {
             //获取默认图片 (如果需要)
-            return array_combine($sizeList, array_fill(0, count($sizeList), $defaulePic));
+            foreach ($allowSizeList as $size) {
+                $urls[$size] = $defaultPic;
+            }
+        } else {
+            $pictureUrl = app('pictureManager.PictureUrlManager');
+            foreach ($allowSizeList as $size) {
+                $urls[$size] = $pictureUrl->getUrl($pictureId, $size);
+            }
         }
-        list($pictureId, $suffix) = explode('.', $picture, 2);
-        $data = [];
-        foreach ($sizeList as $size) {
-            $data[$size] = route(PictureManager::getImageRouteName(), [
-                'img_id' => $pictureId,
-                'size' => $size,
-                'suffix' => $suffix
-            ]);
-        }
-        return $data;
+        return $urls;
     }
 }
