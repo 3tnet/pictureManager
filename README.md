@@ -13,12 +13,12 @@ a picture manage tool
 
 ## Config
 
-set the pictureConfig options in **config/picture.php** 
+Set the pictureConfig options in **config/picture.php** 
 
 
 ## Usage
 
-显示图片
+Show picture
 
 ``` 
 Route::get('pic/{pictureId}_{style?}', function ($pictureId, $style = null) {
@@ -27,5 +27,5 @@ Route::get('pic/{pictureId}_{style?}', function ($pictureId, $style = null) {
 ```
 
 
-访问 `http://localhost:8080/pic/99cceb7fd0bdf4e17903dc2655c84af4` 就ok!
+Visit  `http://localhost:8080/pic/99cceb7fd0bdf4e17903dc2655c84af4` ok!
 
