@@ -1,6 +1,7 @@
 # pictureManager for Laravel 5.*
 a picture manage tool
 
+[完整中文文档](https://github.com/3tnet/pictureManager/wiki)
 
 ## Installation
 
