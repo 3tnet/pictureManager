@@ -1,5 +1,5 @@
 # pictureManager for Laravel 5.*
-a picture manage tool
+A picture manage tool
 
 
 ## Installation
