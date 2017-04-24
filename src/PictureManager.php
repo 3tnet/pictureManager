@@ -45,8 +45,8 @@ class PictureManager
         if (!is_null($style)) {
             //获取具体尺寸
             $style = explode(',', $this->config['sizeList'][$style], 3);
-            $this->size['width'] = $style[0] ?: null;
-            $this->size['height'] = $style[1] ?: null;
+            $this->size['width'] = intval($style[0]) ?: null;
+            $this->size['height'] = intval($style[1]) ?: null;
             if (count($style) >= 3) {
                 $this->quality = $style[2];
             } else {
@@ -69,7 +69,10 @@ class PictureManager
      */
     public function show()
     {
-        $fileName = "{$this->pictureId}_{$this->style}";
+        $fileName = $this->pictureId;
+        if(!is_null($this->style)){
+            $fileName .= '_'.$this->style;
+        }
         //判断客户端是否有缓存
         if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $fileName) {
             //有缓存
@@ -96,9 +99,9 @@ class PictureManager
             throw new PictureNotFountException();
         }
         if (!empty($this->size)) {
-            $imageObj = $this->imageManager->make($this->originalPath);
 
-            if (!is_null($this->size['width']) && !is_null($this->size['height'])) {
+            $imageObj = $this->imageManager->make($this->originalPath);
+            if (!(is_null($this->size['width']) && is_null($this->size['height']))) {
                 $imageObj->resize($this->size['width'], $this->size['height'], function ($constraint) {
                     $constraint->aspectRatio();
                 });
