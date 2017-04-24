@@ -42,14 +42,16 @@ class PictureUploader
      * 上传图片
      * @param UploadedFile $imageFile
      * @throws UploadException         If upload is fail
-     * @return string
+     * @return string pictureId
      */
     public function upload($imageFile)
     {
         if ($imageFile instanceof UploadedFile) {
             if ($imageFile->isValid()) {
                 $pictureId = $this->pictureIdGenerator->generate($imageFile);
-                $this->disk->putFileAs('', $imageFile, $this->pictureUrlManager->getOriginalPath($pictureId));
+                if(false === $this->disk->putFileAs('', $imageFile, $this->pictureUrlManager->getOriginalPath($pictureId))){
+                    throw new UploadException();
+                }
                 return $pictureId;
             } else {
                 throw new UploadException($imageFile->getErrorMessage());
