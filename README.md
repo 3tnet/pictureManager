@@ -31,4 +31,4 @@ Route::get('/pic/{img_id}_{size}_{suffix}',
 
 ## Config
 
-set the pictureConfig options in **config/picture.php** 
+Set the pictureConfig options in **config/picture.php** 
