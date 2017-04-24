@@ -8,7 +8,6 @@ A picture manage tool
 
 - Add `Intervention\Image\ImageServiceProvider::class,` to  **providers** in *config/app.php*
 - Add `Ty666\PictureManager\PictureManagerServiceProvider::class,` to  **providers** in *config/app.php*
-- Add `'PictureManager' => Ty666\PictureManager\Facades\PictureManager::class,` to **aliases** in *config/app.php*
 - Run `php artisan vendor:publish`
 
 
