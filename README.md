@@ -6,9 +6,7 @@ A picture manage tool
 ## Installation
 
 - Run `composer require ty666/picture-manager`
-
 - Add `Ty666\PictureManager\PictureManagerServiceProvider::class,` to  **providers** in *config/app.php*
-- Add `'PictureManager' => Ty666\PictureManager\Facades\PictureManager::class,` to **aliases** in *config/app.php*
 - Run `php artisan vendor:publish --provider="Ty666\PictureManager\PictureManagerServiceProvider"`
 
 
