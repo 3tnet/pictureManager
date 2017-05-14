@@ -103,7 +103,7 @@ class PictureManager
             $imageObj = $this->imageManager->make($this->originalPath);
             if (!(is_null($this->size['width']) && is_null($this->size['height']))) {
                 $imageObj->resize($this->size['width'], $this->size['height'], function ($constraint) {
-                    $constraint->aspectRatio();
+                    $constraint->upsize();
                 });
             }
 
