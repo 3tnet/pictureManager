@@ -14,6 +14,8 @@ Trait Picture
         }
 
         $allowSizeList = array_values(array_intersect($sizeListKeys, $allowSizeList));
+        if(empty($allowSizeList)) return null;
+
         $urls = [];
         if (empty($pictureId)) {
             //获取默认图片 (如果需要)
