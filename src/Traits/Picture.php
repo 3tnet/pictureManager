@@ -9,7 +9,10 @@ Trait Picture
         $sizeListKeys = array_keys(config('picture.sizeList'));
         if (is_null($allowSizeList)) {
             $allowSizeList = $sizeListKeys;
+        }elseif(is_string($allowSizeList)){
+            $allowSizeList = [$allowSizeList];
         }
+
         $allowSizeList = array_values(array_intersect($sizeListKeys, $allowSizeList));
         $urls = [];
         if (empty($pictureId)) {
@@ -23,6 +26,10 @@ Trait Picture
                 $urls[$size] = $pictureUrl->getUrl($pictureId, $size);
             }
         }
+        if(count($urls) == 1){
+            return array_pop($urls);
+        }
         return $urls;
     }
 }
+
