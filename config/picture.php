@@ -12,7 +12,7 @@ return [
         'jpeg'
     ],
     /**
-     * 图片质量
+     * 默认图片质量
      */
     'quality' => 75,
     /**
@@ -42,6 +42,8 @@ return [
                 'middleware' => []
             ]
         ],
-        'qiniu' => []
+        'qiniu' => [
+            // 'style_delimiter' => '-'
+        ]
     ]
 ];

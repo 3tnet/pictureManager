@@ -13,6 +13,9 @@ class QiniuPictureUrl extends PictureUrl
             return null;
         }
         $baseUrl = Storage::disk('qiniu')->url($pictureId);
+        if(isset($this->config['style_delimiter'])){
+            return "$baseUrl{$this->config['style_delimiter']}$style";
+        }
         $style = explode(',', $this->config['sizeList'][$style], 3);
         $width = $style[0] ?: '';
         $height = $style[1] ?: '';
