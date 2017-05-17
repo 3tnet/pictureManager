@@ -102,8 +102,14 @@ class PictureManager
 
             $imageObj = $this->imageManager->make($this->originalPath);
             if (!(is_null($this->size['width']) && is_null($this->size['height']))) {
-                $imageObj->resize($this->size['width'], $this->size['height'], function ($constraint) {
-                    $constraint->upsize();
+                $size = $this->size;
+                $imageObj->resize($this->size['width'], $this->size['height'], function ($constraint) use($size){
+                    if(in_array(null, $size)){
+                        $constraint->aspectRatio();
+                    }else{
+                        $constraint->upsize();
+                    }
+
                 });
             }
 
@@ -126,3 +132,4 @@ class PictureManager
         return $this;
     }
 }
+
