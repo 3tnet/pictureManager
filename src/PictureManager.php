@@ -131,5 +131,10 @@ class PictureManager
         }
         return $this;
     }
+	
+	public function getPictureId()
+    {
+        return $this->pictureId;
+    }
 }
 
