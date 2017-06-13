@@ -9,7 +9,7 @@
     ],
     "license": "MIT",
     "require": {
-        "ty666/image": "dev-master"
+        "ty666/image": "^2.0"
     },
     "autoload": {
         "psr-4": {
