@@ -2,6 +2,7 @@
 
 namespace Ty666\PictureManager;
 
+use function GuzzleHttp\Psr7\str;
 use Intervention\Image\ImageManager;
 use Ty666\PictureManager\Exception\PictureNotFountException;
 
@@ -120,19 +121,20 @@ class PictureManager
     public function convert($imageUrl)
     {
         $imageObj = $this->imageManager->make($imageUrl);
-        $pictureId = $this->pictureIdGenerator->generate($imageObj->encoded);
+        $imageObj->encode(substr(strstr($imageObj->mime(), '/'), 1), $this->config['quality']);
+        $pictureId = $this->pictureIdGenerator->generate($imageObj->getEncoded());
         $this->init($pictureId, null);
         $dir = pathinfo($this->originalPath, PATHINFO_DIRNAME);
         if(!file_exists($this->originalPath)){
             if(!file_exists($dir)){
                 mkdir($dir, 0777, true);
             }
-            $imageObj->save($this->originalPath, $this->quality);
+            $imageObj->save($this->originalPath);
         }
         return $this;
     }
-	
-	public function getPictureId()
+
+    public function getPictureId()
     {
         return $this->pictureId;
     }
