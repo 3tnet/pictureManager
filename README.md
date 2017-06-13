@@ -26,4 +26,4 @@ Route::get('pic/{pictureId}_{style?}', function ($pictureId, $style = null) {
 ```
 
 
-Visit  `http://localhost:8080/pic/99cceb7fd0bdf4e17903dc2655c84af4` ok!
+Visit  `http://localhost/pic/99cceb7fd0bdf4e17903dc2655c84af4` ok!
