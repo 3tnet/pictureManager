@@ -13,7 +13,7 @@ class PictureIdGenerator
         } elseif (is_string($picture)) {
             return md5($picture);
         } else {
-            return md5(uniqid('', true));
+            return md5(uniqid('t', true));
         }
     }
 }
