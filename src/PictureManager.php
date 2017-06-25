@@ -121,15 +121,15 @@ class PictureManager
     public function convert($imageUrl)
     {
         $imageObj = $this->imageManager->make($imageUrl);
-        $imageObj->encode(substr(strstr($imageObj->mime(), '/'), 1), $this->config['quality']);
-        $pictureId = $this->pictureIdGenerator->generate($imageObj->getEncoded());
+        $data = $imageObj->encode(substr(strstr($imageObj->mime(), '/'), 1), $this->config['quality']);
+        $pictureId = $this->pictureIdGenerator->generate($data);
         $this->init($pictureId, null);
         $dir = pathinfo($this->originalPath, PATHINFO_DIRNAME);
         if(!file_exists($this->originalPath)){
             if(!file_exists($dir)){
                 mkdir($dir, 0777, true);
             }
-            $imageObj->save($this->originalPath);
+            @file_put_contents($this->originalPath, $data);
         }
         return $this;
     }
